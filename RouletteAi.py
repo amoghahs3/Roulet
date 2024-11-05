@@ -25,8 +25,8 @@ print("Roulette prediction artificial intelligence")
 # Load data from file, ignoring white spaces and accepting unlimited length numbers
 data = np.genfromtxt('data.txt', delimiter='\n', dtype=int)
 
-# Filter out numbers that are not between 0 and 36 (inclusive)
-data = data[(data >= 0) & (data <= 36)]
+# Filter out numbers that are not between 0 and 99 (inclusive)
+data = data[(data >= 0) & (data <= 99)]
 
 # Define the length of the input sequences
 sequence_length = 10
@@ -43,24 +43,24 @@ train_targets = targets[:int(0.8*len(targets))]
 val_data = sequences[int(0.8*len(sequences)):]
 val_targets = targets[int(0.8*len(targets)):]
 
-# Get the maximum value in the data
-max_value = np.max(data)
-
 # Set the number of features to 1
 num_features = 1
 
+# Define the model with updated input dimension for numbers 0 to 99
 model = keras.Sequential()
-model.add(layers.Embedding(input_dim=max_value+1, output_dim=64))
+model.add(layers.Embedding(input_dim=100, output_dim=64))  # Input dimension set to 100 for range 0–99
 model.add(layers.LSTM(256))
 model.add(layers.Dense(num_features, activation='softmax'))  # Set the number of units to match the number of features
 
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-
+# Train the model
 history = model.fit(train_data, train_targets, validation_data=(val_data, val_targets), epochs=100)
 
+# Make predictions
 predictions = model.predict(val_data)
 
+# Get the predicted numbers
 indices = np.argsort(predictions, axis=1)[:, -num_features:]
 predicted_numbers = np.take_along_axis(val_data, indices, axis=1)
 
